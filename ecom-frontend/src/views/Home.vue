@@ -13,7 +13,7 @@
             <h5 class="card-title">{{ product.name }}</h5>
             <p class="card-text">{{ product.description }}</p>
             <p class="card-text"><strong>{{ product.price }}€</strong></p>
-            <router-link :to="{ name: 'Products' }" class="btn btn-primary">
+            <router-link :to="{ name: 'Products' }" class="btn btn-secondary">
               Voir tous les produits
             </router-link>
           </div>

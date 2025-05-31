@@ -40,6 +40,19 @@
       </div>
     </div>
     
+    <!-- Panier -->
+    <div v-if="cart.length > 0" class="cart-section">
+      <h3>Panier</h3>
+      <div class="cart-items">
+        <div v-for="item in cart" :key="item.product_id" class="cart-item">
+          <div>{{ item.product_name }}</div>
+          <div>{{ item.product_price }} FCFA</div>
+          <div>Quantité: {{ item.quantity }}</div>
+          <button @click="removeFromCart(item)" class="btn btn-danger">Supprimer</button>
+        </div>
+      </div>
+    </div>
+    
     <div v-if="showForm" class="product-form-overlay">
       <div class="product-form-container">
         <div class="product-form-header">
@@ -115,6 +128,8 @@ axios.defaults.baseURL = 'http://localhost:5173/api'
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
 
 const products = ref([])
+const cart = ref([])
+const loading = ref(false)
 const showForm = ref(false)
 const formMode = ref('create')
 const form = ref({
@@ -161,6 +176,11 @@ const initializeWebSocket = async () => {
         if (index !== -1) {
           products.value.splice(index, 1)
         }
+      })
+
+    window.Echo.private('cart-updates')
+      .listen('CartUpdated', (event) => {
+        cart.value = event.cart
       })
   } catch (error) {
     console.error('Erreur lors de l\'initialisation de WebSocket:', error)
@@ -333,13 +353,49 @@ const addToCart = (product) => {
   }
 }
 
+const removeFromCart = (product) => {
+  try {
+    axios.delete(`/removeFromCart/${product.id}`)
+      .then((response) => {
+        if (response.data.success) {
+          sweetAlert('Succès', 'Produit supprimé du panier', 'success')
+          // Mettre à jour le stock si nécessaire
+          const index = products.value.findIndex(p => p.id === product.id)
+          if (index !== -1) {
+            products.value[index].stock = response.data.stock
+          }
+        } else {
+          sweetAlert('Erreur', response.data.message || 'Erreur lors de la suppression du panier', 'error')
+        }
+      })
+      .catch((error) => {
+        console.error('Erreur lors de la suppression du panier:', error)
+        sweetAlert('Erreur', 'Erreur lors de la suppression du panier', 'error')
+      })
+  } catch (error) {
+    console.error('Erreur lors de la suppression du panier:', error)
+    sweetAlert('Erreur', 'Erreur lors de la suppression du panier', 'error')
+  }
+}
+
 onMounted(async () => {
   await initializeWebSocket()
   await getProducts()
+  
+  // Récupérer le panier initial
+  try {
+    const response = await axios.get('/cart')
+    if (response.data.success) {
+      cart.value = response.data.cart || []
+    }
+  } catch (error) {
+    console.error('Erreur lors de la récupération du panier:', error)
+  }
 })
 
 onUnmounted(() => {
   window.Echo.leave('products')
+  window.Echo.leave('cart-updates')
 })
 </script>
 
@@ -638,6 +694,25 @@ onUnmounted(() => {
 .action-buttons {
   display: flex;
   gap: 0.5rem;
+}
+
+.cart-section {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.cart-items {
+  margin-top: 10px;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
 }
 
 @media (max-width: 768px) {

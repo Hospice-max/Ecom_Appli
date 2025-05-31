@@ -34,6 +34,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/deleteProduct/{id}', [ProductController::class,'destroy']);
 });
 
+// Route du panier
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/cart', [ProductController::class,'cart']);
+    Route::post('/addToCart/{product}', [ProductController::class,'store']);
+    Route::delete('/removeFromCart/{product}', [ProductController::class,'destroy']);
+});
+
 // Routes des commandes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders', [OrderController::class,'store']);

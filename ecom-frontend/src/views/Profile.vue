@@ -17,10 +17,6 @@
           </div>
         </div>
       </div>
-      <button class="btn-danger" @click="confirmDelete">
-        <i class="bi bi-trash"></i>
-        Supprimer le compte
-      </button>
     </div>
 
     <div class="profile-tabs">
@@ -57,7 +53,7 @@
             <input v-model="profileForm.address" type="text" />
           </div>
           <div class="form-actions">
-            <button type="submit" class="btn-primary" :disabled="loading">
+            <button type="submit" class="btn btn-secondary" :disabled="loading">
               <span v-if="loading" class="spinner"></span>
               <span v-else>Mettre à jour</span>
             </button>
@@ -80,37 +76,13 @@
             <label>Confirmer le nouveau mot de passe</label>
             <input v-model="passwordForm.confirm" type="password" required />
           </div>
-          <div class="form-actions">
-            <button type="submit" class="btn-primary" :disabled="loading">
+          <div class="form-actions flex justify-between">
+            <button type="submit" :disabled="loading" class="btn bg-[#6aa84f] border border-[#6aa84f] hover:bg-[#5c9445]">
               <span v-if="loading" class="spinner"></span>
-              <span v-else>Changer le mot de passe</span>
-            </button>
-            <button class="btn btn-danger" @click="confirmLogout">
-              <i class="bi bi-box-arrow-right"></i>
-              Déconnexion
+              <span v-else>Enregistrer</span>
             </button>
           </div>
         </form>
-      </div>
-
-      <div v-if="activeTab === 'orders'" class="profile-section">
-        <h2>Mes commandes</h2>
-        <div class="orders-list">
-          <div v-if="orders.length > 0">
-            <div v-for="order in orders" :key="order.id" class="order-card">
-              <div class="order-info">
-                <span class="order-number">Commande #{{ order.id }}</span>
-                <span class="order-date">{{ formatDate(order.date) }}</span>
-              </div>
-              <div class="order-status" :class="order.status">
-                {{ order.status }}
-              </div>
-            </div>
-          </div>
-          <div v-else>
-            <p>Vous n'avez pas de commandes</p>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -131,7 +103,7 @@
             >
               Annuler
             </button>
-            <button type="submit" class="btn-primary">Enregistrer</button>
+            <button type="submit" class="btn-primary ">Enregistrer</button>
           </div>
         </form>
       </div>
@@ -147,8 +119,7 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-const user = ref({
-});
+const user = ref({});
 
 const orders = ref([]);
 
@@ -160,6 +131,11 @@ const loading = ref(false);
 const showUploadModal = ref(false);
 const previewImage = ref(null);
 
+const showMenu = ref(false)
+
+function toggleMenu() {
+  showMenu.value = !showMenu.value
+}
 const profileForm = ref({
   name: "",
   email: "",
@@ -183,10 +159,9 @@ const handleFileChange = (event) => {
   }
 };
 
-
 const uploadAvatar = async () => {
   // Logique pour l'upload de l'avatar
-  
+
   try {
     await axios.post(
       "/api/uploadAvatar",
@@ -403,7 +378,10 @@ const getProductsCount = async () => {
     const { data } = await axios.get("/api/products");
     productsCount.value = data.products.length;
   } catch (error) {
-    console.error("Erreur lors de la récupération du nombre de produits :", error);
+    console.error(
+      "Erreur lors de la récupération du nombre de produits :",
+      error
+    );
   }
 };
 
@@ -413,12 +391,10 @@ onMounted(() => {
   if (userData) {
     user.value = userData;
     profileForm.value = { ...userData };
-  };
+  }
 
   getProductsCount();
 });
-
-
 </script>
 
 <style scoped>
@@ -434,11 +410,7 @@ onMounted(() => {
   gap: 2rem;
   margin-bottom: 3rem;
   padding: 2rem;
-  background: linear-gradient(
-    135deg,
-    var(--primary-color),
-    var(--secondary-color)
-  );
+  background: linear-gradient(135deg, #6c757d, #e2e4e1);
   border-radius: 16px;
   color: white;
 }
@@ -535,11 +507,11 @@ onMounted(() => {
 }
 
 .tab-btn:hover {
-  background: rgba(37, 99, 235, 0.1);
+  background: #e2e4e1;
 }
 
 .tab-btn.active {
-  background: var(--primary-color);
+  background: #b58e18;
   color: white;
 }
 
@@ -650,54 +622,6 @@ onMounted(() => {
 
 .btn-outline:hover {
   background: #f3f4f6;
-}
-
-.orders-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.order-card {
-  padding: 1rem;
-  border-radius: 8px;
-  background: #f9fafb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.order-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.order-number {
-  font-weight: 500;
-  color: var(--text-color);
-}
-
-.order-date {
-  font-size: 0.9rem;
-  color: #6b7280;
-}
-
-.order-status {
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.order-status.en_attente {
-  background: #e5e7eb;
-  color: #6b7280;
-}
-
-.order-status.livree {
-  background: #dcfce7;
-  color: #166534;
 }
 
 .modal-overlay {

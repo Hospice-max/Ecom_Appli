@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import Echo from 'laravel-echo'
 import axios from 'axios'
 import Swal from 'sweetalert2'
@@ -122,9 +122,9 @@ const formatTime = (time) => {
   return new Date(time).toLocaleTimeString()
 }
 
-const scrollToBottom = () => {
-  messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-}
+// const scrollToBottom = () => {
+//   messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+// }
 
 const startPolling = () => {
   if (selectedUser.value) {
@@ -151,7 +151,7 @@ const loadMessages = async (userId) => {
   try {
     const response = await axios.get(`/api/messages/${userId}`)
     messages.value = [...response.data.messages].reverse()
-    scrollToBottom()
+    // scrollToBottom()
   } catch (error) {
     console.error('Erreur lors du chargement des messages:', error)
     sweetAlert('Erreur', 'Erreur lors du chargement des messages', 'error')
@@ -202,7 +202,7 @@ const initializeWebSocket = async () => {
     .listen('.App\\Events\\MessageSent', (event) => {
       if (event.message.recipient_id === userData.value.id || event.message.sender_id === userData.value.id) {
         messages.value.push(event.message);
-        scrollToBottom();
+        // scrollToBottom();
       }
     })
     .listen('.App\\Events\\UsersUpdated', (event) => {
@@ -220,13 +220,32 @@ onMounted(async () => {
   const echoConfigured = await configEcho()
   if (echoConfigured) {
     await loadUsers()
-    await initializeWebSocket()
-  } 
+    initializeWebSocket()
+  }
 })
 
-onUnmounted(() => {
-  window.Echo.leave(`user.${userData.value.id}`)
+onBeforeUnmount(() => {
+  // Arrêter le polling
   stopPolling()
+  
+  // Nettoyer les écouteurs WebSocket
+  if (window.Echo) {
+    // Quitter le canal privé
+    window.Echo.private(`user.${userData.value.id}`).stopListening('.App\\Events\\MessageSent')
+    window.Echo.private(`user.${userData.value.id}`).stopListening('.App\\Events\\UsersUpdated')
+    
+    // Quitter le canal public
+    window.Echo.channel('notifications').stopListening('.App\\Events\\NewNotification')
+    
+    // Déconnecter Echo
+    window.Echo.connector.socket.disconnect()
+  }
+  
+  // Nettoyer les variables
+  selectedUser.value = null
+  messages.value = []
+  users.value = []
+  notifications.value = []
 })
 </script>
 

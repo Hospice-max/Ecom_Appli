@@ -4,7 +4,7 @@
     
     <div v-if="cart.length === 0" class="text-center">
       <p>Votre panier est vide</p>
-      <router-link to="/produits" class="btn btn-primary">
+      <router-link to="/produits" class="btn btn-secondary">
         Retour aux produits
       </router-link>
     </div>

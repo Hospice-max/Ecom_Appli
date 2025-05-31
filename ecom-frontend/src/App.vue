@@ -1,12 +1,23 @@
 <template>
   <div id="app">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary">
       <div class="container">
         <router-link to="/" class="navbar-brand">Mon E-commerce</router-link>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          @click="toggleMenu"
+          aria-label="Toggle navigation"
+        >
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
+
+        <div
+          class="collapse navbar-collapse"
+          :class="{ show: isMenuOpen }"
+          id="navbarNav"
+        >
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
               <router-link to="/" class="nav-link">Accueil</router-link>
@@ -42,22 +53,28 @@
 </template>
 
 <script>
-import { computed } from 'vue'
-import { useStore } from 'vuex'
+import { ref, computed } from "vue";
+import { useStore } from "vuex";
 
 export default {
-  name: 'App',
+  name: "App",
   setup() {
-    const store = useStore()
-    const cartCount = computed(() => store.state.cart.length)
-    
-    return {
-      cartCount
-    }
-  }
-}
-</script>
+    const store = useStore();
+    const cartCount = computed(() => store.state.cart.length);
+    const isMenuOpen = ref(false);
 
+    const toggleMenu = () => {
+      isMenuOpen.value = !isMenuOpen.value;
+    };
+
+    return {
+      cartCount,
+      isMenuOpen,
+      toggleMenu
+    };
+  }
+};
+</script>
 <style>
 :root {
   --primary-color: #2563eb;
@@ -68,7 +85,7 @@ export default {
 }
 
 #app {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--text-color);
@@ -77,7 +94,11 @@ export default {
 }
 
 .navbar {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 }
@@ -104,7 +125,7 @@ export default {
 }
 
 .nav-link::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 0;
   height: 2px;
@@ -164,7 +185,7 @@ export default {
   .navbar-brand {
     font-size: 1.2rem;
   }
-  
+
   .nav-link {
     padding: 0.3rem 0.8rem !important;
   }
@@ -186,5 +207,26 @@ export default {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--secondary-color);
+}
+
+.new-navbar-collapse {
+  display: none;
+  flex-direction: column;
+}
+
+.new-navbar-collapse.show {
+  display: flex;
+}
+
+/* Optionnel : comportement desktop */
+@media (min-width: 992px) {
+  .new-navbar-collapse {
+    display: flex !important;
+    flex-direction: row;
+  }
+
+  .new-navbar-toggler {
+    display: none;
+  }
 }
 </style>
