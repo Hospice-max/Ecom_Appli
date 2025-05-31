@@ -327,26 +327,27 @@ const editProduct = (product) => {
 
 const addToCart = (product) => {
   try {
-    axios.post('/cart', {
-      product_id: product.id,
-      quantity: 1
-    })
-    .then((response) => {
-      if (response.data.success) {
-        sweetAlert('Succès', 'Produit ajouté au panier', 'success')
-        // Mettre à jour le stock si nécessaire
-        const index = products.value.findIndex(p => p.id === product.id)
-        if (index !== -1) {
-          products.value[index].stock = response.data.stock
-        }
-      } else {
-        sweetAlert('Erreur', response.data.message || 'Erreur lors de l\'ajout au panier', 'error')
-      }
-    })
-    .catch((error) => {
-      console.error('Erreur lors de l\'ajout au panier:', error)
-      sweetAlert('Erreur', 'Erreur lors de l\'ajout au panier', 'error')
-    })
+    this.$store.commit('addToCart', product);
+  //   axios.post('/cart', {
+  //     product_id: product.id,
+  //     quantity: 1
+  //   })
+  //   .then((response) => {
+  //     if (response.data.success) {
+  //       sweetAlert('Succès', 'Produit ajouté au panier', 'success')
+  //       // Mettre à jour le stock si nécessaire
+  //       const index = products.value.findIndex(p => p.id === product.id)
+  //       if (index !== -1) {
+  //         products.value[index].stock = response.data.stock
+  //       }
+  //     } else {
+  //       sweetAlert('Erreur', response.data.message || 'Erreur lors de l\'ajout au panier', 'error')
+  //     }
+  //   })
+  //   .catch((error) => {
+  //     console.error('Erreur lors de l\'ajout au panier:', error)
+  //     sweetAlert('Erreur', 'Erreur lors de l\'ajout au panier', 'error')
+  //   })
   } catch (error) {
     console.error('Erreur lors de l\'ajout au panier:', error)
     sweetAlert('Erreur', 'Erreur lors de l\'ajout au panier', 'error')
