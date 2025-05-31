@@ -2,7 +2,58 @@
   <div class="profile-container">
     <div class="profile-header">
       <div class="profile-avatar">
-        <img :src="user.avatar || '/images/default-avatar.png'" alt="Avatar" class="rounded-circle">
+        <div class="profile-avatar">
+          <img
+            v-if="avatar"
+            :src="avatar"
+            alt="Avatar"
+            class="rounded-circle w-100 h-100"
+          />
+          <span v-else
+            ><svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 30 30"
+              width="100"
+              height="100"
+            >
+              <path fill="currentColor" d="M16 8a5 5 0 1 0 5 5a5 5 0 0 0-5-5" />
+              <path
+                fill="currentColor"
+                d="M16 2a14 14 0 1 0 14 14A14.016 14.016 0 0 0 16 2m7.993 22.926A5 5 0 0 0 19 20h-6a5 5 0 0 0-4.992 4.926a12 12 0 1 1 15.985 0"
+              />
+            </svg> </span
+          ><br />
+          <span class="editBtn" @click="openFileInput">
+            <i class="bi bi-pencil">Modifier</i>
+          </span>
+        </div>
+
+        <div id="imagePreviewModal">
+          <span
+            style="
+              position: absolute;
+              top: 10px;
+              right: 20px;
+              font-size: 30px;
+              font-weight: bold;
+              color: white;
+              cursor: pointer;
+            "
+            onclick="closePreview()"
+            >&times;</span
+          >
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 100%;
+            "
+          >
+            <img id="previewImage" style="max-width: 90%; max-height: 90%" />
+          </div>
+          <button @click="confirmImage()" class="ConfirmBtn">Confirm</button>
+        </div>
       </div>
       <div class="profile-info">
         <h1>{{ user.name }}</h1>
@@ -25,41 +76,41 @@
     </div>
 
     <div class="profile-tabs mt-4">
-      <button 
-        class="tab-btn" 
-        :class="{ 'active': activeTab === 'profile' }"
+      <button
+        class="tab-btn"
+        :class="{ active: activeTab === 'profile' }"
         @click="activeTab = 'profile'"
       >
         <i class="bi bi-person"></i>
         Profil
       </button>
-      <button 
-        class="tab-btn" 
-        :class="{ 'active': activeTab === 'orders' }"
+      <button
+        class="tab-btn"
+        :class="{ active: activeTab === 'orders' }"
         @click="activeTab = 'orders'"
       >
         <i class="bi bi-box"></i>
         Commandes
       </button>
-      <button 
-        class="tab-btn" 
-        :class="{ 'active': activeTab === 'wishlist' }"
+      <button
+        class="tab-btn"
+        :class="{ active: activeTab === 'wishlist' }"
         @click="activeTab = 'wishlist'"
       >
         <i class="bi bi-heart"></i>
         Favoris
       </button>
-      <button 
-        class="tab-btn" 
-        :class="{ 'active': activeTab === 'reviews' }"
+      <button
+        class="tab-btn"
+        :class="{ active: activeTab === 'reviews' }"
         @click="activeTab = 'reviews'"
       >
         <i class="bi bi-star"></i>
         Avis
       </button>
-      <button 
-        class="tab-btn" 
-        :class="{ 'active': activeTab === 'security' }"
+      <button
+        class="tab-btn"
+        :class="{ active: activeTab === 'security' }"
         @click="activeTab = 'security'"
       >
         <i class="bi bi-shield-lock"></i>
@@ -81,11 +132,19 @@
           </div>
           <div class="form-group">
             <label>Adresse</label>
-            <input v-model="profileForm.address" type="text" />
+            <input
+              v-model="profileForm.address"
+              placeholder="inscrivez votre adresse"
+              type="text"
+            />
           </div>
           <div class="form-group">
             <label>Téléphone</label>
-            <input v-model="profileForm.phone" type="tel" />
+            <input
+              v-model="profileForm.phone"
+              placeholder="inscrivez votre numero"
+              type="tel"
+            />
           </div>
           <div class="form-actions">
             <button type="submit" class="btn btn-success" :disabled="loading">
@@ -102,20 +161,30 @@
           <div v-for="order in orders" :key="order.id" class="order-item">
             <div class="order-header">
               <span class="order-date">{{ formatDate(order.date) }}</span>
-              <span class="order-status" :class="order.status">{{ order.status }}</span>
+              <span class="order-status" :class="order.status">{{
+                order.status
+              }}</span>
             </div>
             <div class="order-items">
-              <div v-for="item in order.items" :key="item.id" class="order-item">
-                <img :src="item.image" :alt="item.name" class="order-item-img">
+              <div
+                v-for="item in order.items"
+                :key="item.id"
+                class="order-item"
+              >
+                <img
+                  :src="item.image"
+                  :alt="item.name"
+                  class="order-item-img"
+                />
                 <div class="order-item-info">
                   <h5>{{ item.name }}</h5>
-                  <p class="text-muted">{{ item.quantity }} x {{ item.price }}€</p>
+                  <p class="text-muted">
+                    {{ item.quantity }} x {{ item.price }}€
+                  </p>
                 </div>
               </div>
             </div>
-            <div class="order-total">
-              Total: {{ order.total }}€
-            </div>
+            <div class="order-total">Total: {{ order.total }}€</div>
           </div>
         </div>
       </div>
@@ -123,12 +192,23 @@
       <div v-if="activeTab === 'wishlist'" class="profile-section">
         <h2>Favoris</h2>
         <div class="wishlist-grid">
-          <div v-for="product in wishlist" :key="product.id" class="wishlist-item">
-            <img :src="product.image" :alt="product.name" class="wishlist-img">
+          <div
+            v-for="product in wishlist"
+            :key="product.id"
+            class="wishlist-item"
+          >
+            <img
+              :src="product.image"
+              :alt="product.name"
+              class="wishlist-img"
+            />
             <div class="wishlist-info">
               <h5>{{ product.name }}</h5>
               <p class="text-muted">{{ product.price }}€</p>
-              <button @click="removeFromWishlist(product.id)" class="btn btn-danger btn-sm">
+              <button
+                @click="removeFromWishlist(product.id)"
+                class="btn btn-danger btn-sm"
+              >
                 <i class="bi bi-trash"></i> Supprimer
               </button>
             </div>
@@ -143,13 +223,20 @@
             <div class="review-header">
               <h5>{{ review.productName }}</h5>
               <div class="rating">
-                <i v-for="n in review.rating" :key="n" class="bi bi-star-fill text-warning"></i>
+                <i
+                  v-for="n in review.rating"
+                  :key="n"
+                  class="bi bi-star-fill text-warning"
+                ></i>
               </div>
             </div>
             <p class="review-text">{{ review.text }}</p>
             <div class="review-footer">
               <span class="text-muted">{{ formatDate(review.date) }}</span>
-              <button @click="deleteReview(review.id)" class="btn btn-sm btn-outline-danger ms-2">
+              <button
+                @click="deleteReview(review.id)"
+                class="btn btn-sm btn-outline-danger ms-2"
+              >
                 <i class="bi bi-trash"></i> Supprimer
               </button>
             </div>
@@ -183,7 +270,8 @@
         <div class="delete-account mt-4">
           <h3 class="text-danger">Supprimer le compte</h3>
           <p class="text-muted mb-3">
-            Attention : Cette action est irréversible et supprimera définitivement votre compte.
+            Attention : Cette action est irréversible et supprimera
+            définitivement votre compte.
           </p>
           <button @click="confirmDeleteAccount" class="btn btn-danger">
             <i class="bi bi-trash"></i> Supprimer mon compte
@@ -201,165 +289,292 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useStore } from 'vuex'
-import { useRouter } from 'vue-router'
-import Swal from 'sweetalert2'
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import Swal from "sweetalert2";
+import axios from "axios";
+import store from "../store";
 
-const store = useStore()
-const router = useRouter()
-const user = JSON.parse(localStorage.getItem('user'))
-const activeTab = ref('profile')
+const router = useRouter();
+const user = JSON.parse(localStorage.getItem("user"));
+const activeTab = ref("profile");
 
-console.log(user)
 // Formulaires
 const profileForm = {
-  name: user.name || '',
-  email: user.email || '',
-  address: user.address || '',
-  phone: user.phone || ''
-}
+  name: user.name || "",
+  email: user.email || "",
+  address: user.address || "",
+  phone: user.phone || "",
+};
 
 const passwordForm = {
-  current: '',
-  new: '',
-  confirm: ''
+  current: "",
+  new: "",
+  confirm: "",
+};
+
+const loading = ref(false);
+
+// Ajoutez une référence pour l'avatar
+const avatar = ref();
+
+let selectedImageDataUrl = null;
+
+// Fonction pour ouvrir le sélecteur de fichier
+function openFileInput() {
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "image/*";
+  fileInput.style.display = "none";
+
+  fileInput.addEventListener("change", function (event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        selectedImageDataUrl = e.target.result;
+        document.getElementById("previewImage").src = selectedImageDataUrl;
+        document.getElementById("imagePreviewModal").style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  fileInput.click();
 }
 
-const loading = ref(false)
+function closePreview() {
+  document.getElementById("imagePreviewModal").style.display = "none";
+}
+
+function confirmImage() {
+  if (selectedImageDataUrl) {
+    const formData = new FormData();
+    formData.append("avatar", selectedImageDataUrl);
+
+    axios
+      .post(`/api/update-avatar/${user.id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        if (response.data.success === true) {
+          avatar.value = response.data.avatar;
+          user.avatar = avatar.value;
+          localStorage.setItem("user", JSON.stringify(user));
+          Swal.fire({
+            icon: "success",
+            title: "Succès",
+            text: response.data.message,
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        Swal.fire({
+          icon: "error",
+          title: "Erreur",
+          text: error.response?.data?.message || "Une erreur est survenue",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      })
+      .finally(() => {
+        closePreview();
+      });
+  }
+}
 
 // Données simulées
 const orders = ref([
   {
     id: 1,
-    date: '2023-05-25',
-    status: 'livré',
-    items: [
-      { id: 1, name: 'Veste en cuir', price: 199.99, quantity: 1 }
-    ],
-    total: 199.99
-  }
-])
+    date: "2023-05-25",
+    status: "livré",
+    items: [{ id: 1, name: "Veste en cuir", price: 199.99, quantity: 1 }],
+    total: 199.99,
+  },
+]);
 
 const wishlist = ref([
-  { id: 1, name: 'Jean slim', price: 79.99, image: '/images/jean.jpg' }
-])
+  { id: 1, name: "Jean slim", price: 79.99, image: "/images/jean.jpg" },
+]);
 
 const reviews = ref([
   {
     id: 1,
-    productName: 'Veste en cuir',
+    productName: "Veste en cuir",
     rating: 5,
-    text: 'Produit de très bonne qualité, correspond parfaitement à la description.',
-    date: '2023-05-25'
-  }
-])
+    text: "Produit de très bonne qualité, correspond parfaitement à la description.",
+    date: "2023-05-25",
+  },
+]);
 
 // Computed
-const ordersCount = computed(() => orders.length)
-const wishlistCount = computed(() => wishlist.length)
-const reviewsCount = computed(() => reviews.length)
+const ordersCount = computed(() => orders.length);
+const wishlistCount = computed(() => wishlist.length);
+const reviewsCount = computed(() => reviews.length);
 
 // Fonctions
 function formatDate(date) {
-  return new Date(date).toLocaleDateString()
+  return new Date(date).toLocaleDateString();
 }
 
+// TODO: Mettre à jour le profil
 function updateProfile() {
-  loading.value = true
+  loading.value = true;
   // Logique de mise à jour du profil
   Swal.fire({
-    icon: 'success',
-    title: 'Succès',
-    text: 'Profil mis à jour avec succès !',
+    icon: "success",
+    title: "Succès",
+    text: "Profil mis à jour avec succès !",
     timer: 2000,
-    showConfirmButton: false
-  })
-  loading.value = false
+    showConfirmButton: false,
+  });
+  loading.value = false;
 }
 
+// TODO: Changer le mot de passe
 function changePassword() {
   if (passwordForm.new !== passwordForm.confirm) {
     Swal.fire({
-      icon: 'error',
-      title: 'Erreur',
-      text: 'Les mots de passe ne correspondent pas.'
-    })
-    return
+      icon: "error",
+      title: "Erreur",
+      text: "Les mots de passe ne correspondent pas.",
+    });
+    return;
   }
 
-  loading.value = true
+  loading.value = true;
   // Logique de changement de mot de passe
   Swal.fire({
-    icon: 'success',
-    title: 'Succès',
-    text: 'Mot de passe mis à jour avec succès !',
+    icon: "success",
+    title: "Succès",
+    text: "Mot de passe mis à jour avec succès !",
     timer: 2000,
-    showConfirmButton: false
-  })
-  loading.value = false
+    showConfirmButton: false,
+  });
+  loading.value = false;
 }
 
+// Supprimer un article des favoris
 function removeFromWishlist(productId) {
   // Logique de suppression de l'article des favoris
-  const index = wishlist.findIndex(item => item.id === productId)
+  const index = wishlist.findIndex((item) => item.id === productId);
   if (index > -1) {
-    wishlist.splice(index, 1)
+    wishlist.splice(index, 1);
     Swal.fire({
-      icon: 'success',
-      title: 'Succès',
-      text: 'Article retiré des favoris !',
+      icon: "success",
+      title: "Succès",
+      text: "Article retiré des favoris !",
       timer: 2000,
-      showConfirmButton: false
-    })
+      showConfirmButton: false,
+    });
   }
 }
 
+// Supprimer un avis
 function deleteReview(reviewId) {
-  const index = reviews.findIndex(r => r.id === reviewId)
+  const index = reviews.findIndex((r) => r.id === reviewId);
   if (index > -1) {
-    reviews.splice(index, 1)
+    reviews.splice(index, 1);
     Swal.fire({
-      icon: 'success',
-      title: 'Succès',
-      text: 'Avis supprimé avec succès !',
+      icon: "success",
+      title: "Succès",
+      text: "Avis supprimé avec succès !",
       timer: 2000,
-      showConfirmButton: false
-    })
+      showConfirmButton: false,
+    });
   }
 }
 
+// Supprimer le compte
 async function confirmDeleteAccount() {
-  const { isConfirmed } = await Swal.fire({
-    title: 'Êtes-vous sûr ?',
+  await Swal.fire({
+    title: "Êtes-vous sûr ?",
     text: "Cette action est irréversible. Votre compte sera définitivement supprimé.",
-    icon: 'warning',
+    icon: "warning",
     showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Oui, supprimer !',
-    cancelButtonText: 'Annuler'
-  })
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Oui, supprimer !",
+    cancelButtonText: "Annuler",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      axios.delete("/api/delete-account").then((response) => {
+        if (response.data.success === true) {
+          logout();
+          Swal.fire({
+            icon: "success",
+            title: "Supprimé",
+            text: "Votre compte a été supprimé avec succès.",
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        }
+      });
+    }
+  });
+}
 
-  if (isConfirmed) {
-    // Logique de suppression du compte
-    store.commit('logout')
-    router.push('/login')
-    Swal.fire({
-      icon: 'success',
-      title: 'Supprimé',
-      text: 'Votre compte a été supprimé avec succès.',
-      timer: 2000,
-      showConfirmButton: false
+const logout = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    await fetch("/api/logout", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
     })
+      .then((response) => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        router.push("/login");
+        return response.ok;
+      })
+      .catch((error) => {
+        console.error("Erreur lors de la déconnexion:", error);
+      });
+  } catch (error) {
+    console.error("Erreur lors de la déconnexion:", error);
   }
-}
+};
 
-function logout() {
-  store.commit('logout')
-  router.push('/login')
-}
-</script> 
+onMounted(() => {
+  // Récupérer l'utilisateur depuis le store Vuex
+  const currentUser = user;
+  if (currentUser && currentUser.id) {
+    // Utiliser l'ID de l'utilisateur connecté pour récupérer ses données
+    axios
+      .get(`/api/users/${currentUser.id}`)
+      .then((response) => {
+        user.value = response.data;
+        avatar.value = user.value.avatar;
+      })
+      .catch((error) => {
+        console.error(
+          "Erreur lors de la récupération des données utilisateur:",
+          error
+        );
+        Swal.fire({
+          icon: "error",
+          title: "Erreur",
+          text: "Impossible de récupérer les données utilisateur",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      });
+  } else {
+    console.error("Aucun utilisateur connecté trouvé dans le store");
+    router.push("/login");
+  }
+});
+</script>
 
 <style scoped>
 .profile-container {
@@ -377,11 +592,7 @@ function logout() {
   margin-bottom: 2rem;
   color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  background: linear-gradient(
-    135deg,
-    #6C757D,
-    #D2D2D2
-  );
+  background: linear-gradient(135deg, #6c757d, #d2d2d2);
 }
 
 .profile-avatar {
@@ -580,6 +791,34 @@ function logout() {
   gap: 1rem;
 }
 
+.profile-avatar {
+  width: 100px; /* Set a fixed width */
+  height: 100px; /* Set a fixed height */
+  overflow: hidden; /* Prevent any overflow */
+  position: relative; /* For positioning the edit button */
+}
+
+.profile-avatar img {
+  width: 100%; /* Ensure the image fills the container */
+  height: 100%; /* Ensure the image fills the container */
+  object-fit: cover; /* Cover the area without stretching */
+}
+
+.editBtn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  color: white;
+  padding: 5px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.editBtn i {
+  font-size: 12px;
+}
+
 @media (max-width: 768px) {
   .profile-container {
     padding: 1rem;
@@ -607,5 +846,38 @@ function logout() {
   .tab-btn {
     flex: none;
   }
+}
+
+.editBtn {
+  cursor: pointer;
+}
+
+.editBtn:hover {
+  color: rgb(32, 129, 209);
+  transform: scale(1.1);
+  font-weight: bold;
+}
+
+#imagePreviewModal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+.ConfirmBtn {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 </style>

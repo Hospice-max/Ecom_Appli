@@ -22,8 +22,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/getMessages', [MessageController::class, 'index']);
     Route::post('/messages', [MessageController::class, 'store']);
     Route::get('/messages/{userId}', [MessageController::class, 'index']);
-    Route::get('/users', [MessageController::class, 'users']);
 });
+
+// Routes des utilisateurs
+Route::get('/users', [MessageController::class, 'users']);
+Route::get('/users/{id}', [AuthController::class, 'show']);
+Route::delete('/delete-account/{id}', action: [MessageController::class,'destroy']);
+Route::post('/update-avatar/{id}', action: [AuthController::class,'updateAvatar']);
 
 // Routes des produits
 Route::middleware('auth:sanctum')->group(function () {

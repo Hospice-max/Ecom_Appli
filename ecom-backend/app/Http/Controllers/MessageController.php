@@ -19,6 +19,7 @@ class MessageController extends Controller
         $this->userStatusService = $userStatusService;
     }
 
+
     public function store(Request $request)
     {
         try {
@@ -89,6 +90,30 @@ class MessageController extends Controller
             return response()->json([
                 'success' => true,
                 'users' => $users
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+    public function destroy($id)
+    {
+        try {
+            $user = User::where('id', $id)->first();
+            $user->delete();
+
+             // Broadcast la liste mise à jour
+             broadcast(new UsersUpdated(Auth::user(), $user))->toOthers();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Compte supprimé avec succès'
             ]);
         } catch (\Exception $e) {
             return response()->json([
