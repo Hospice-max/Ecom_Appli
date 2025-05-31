@@ -140,7 +140,7 @@ export default {
 }
 
 .nav-link:hover {
-  color: var(--accent-color) !important;
+  color: black !important;
   transform: translateY(-2px);
 }
 
@@ -197,16 +197,16 @@ export default {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background-color);
+  background: #D2D2D2;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
+  background: #D2D2D2;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--secondary-color);
+  background: #D2D2D2;
 }
 
 .new-navbar-collapse {

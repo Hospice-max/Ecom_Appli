@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    public function show($id)
+    {
+        $user = User::find($id);
+        return response()->json($user);
+    }
     public function register(Request $request)
     {
         $validated = $request->validate([
@@ -87,5 +92,24 @@ class AuthController extends Controller
                 'email' => $request->user()->email
             ]
         ]);
+    }
+
+    public function updateAvatar($id, Request $request) {
+       try {
+        $user = User::find($id);
+        $user->avatar = $request->avatar;
+        $user->save();
+        return response()->json([
+            'success' => true,
+            'message' => 'Photo de profil mise à jour avec succès',
+            'avatar' => $user->avatar
+        ]);
+       } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Une erreur est survenue',
+            'error' => $e->getMessage()
+        ], 500);
+       }
     }
 }
