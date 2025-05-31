@@ -114,7 +114,7 @@
   
   const handleLogin = async () => {
     try {
-      const { data } = await axios.post('/login', {
+      const { data } = await axios.post('/api/login', {
         email: formData.value.email,
         password: formData.value.password
       })
@@ -134,7 +134,7 @@
   
   const handleRegister = async () => {
     try {
-      const { data } = await axios.post('/register', {
+      const { data } = await axios.post('/api/register', {
         name: formData.value.name,
         email: formData.value.email,
         password: formData.value.password,
@@ -158,7 +158,7 @@
     try {
       const token = localStorage.getItem('token');
         if (!token) return;
-    await fetch('/logout', {
+    await fetch('/api/logout', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,

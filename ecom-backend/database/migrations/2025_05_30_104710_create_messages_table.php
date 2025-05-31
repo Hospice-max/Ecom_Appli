@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // create_orders_table.php
-        Schema::table('orders', function (Blueprint $table) {
+        Schema::create('messages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->text('address');
-            $table->decimal('total', 10, 2);
-            $table->string('status')->default('en_attente');
+            $table->foreignId('sender_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->foreignId('recipient_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->text('message')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('orders');
+        Schema::dropIfExists('messages');
     }
 };

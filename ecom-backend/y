@@ -1,5 +1,5 @@
 {
-	"authHost": "8000",
+	"authHost": "8101",
 	"authEndpoint": "/broadcasting/auth",
 	"clients": [],
 	"database": "sqlite",

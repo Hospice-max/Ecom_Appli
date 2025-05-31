@@ -3,38 +3,44 @@
 namespace App\Http\Controllers;
 
 use App\Events\MessageSent;
+use App\Events\UsersUpdated;
 use App\Models\Message;
+use App\Models\User;
+use App\Services\UserStatusService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class MessageController extends Controller
 {
-    // Middleware d'authentification
-    public function __construct()
+    protected $userStatusService;
+
+    public function __construct(UserStatusService $userStatusService)
     {
-        // $this->middleware('auth:sanctum');
+        $this->userStatusService = $userStatusService;
     }
 
     public function store(Request $request)
     {
         try {
-            $validated = $request->validate([
-                'content' => 'required|string'
+            $request->validate([
+                'recipient_id' => 'required|exists:users,id',
+                'content' => 'required|string|max:1000'
             ]);
 
             $message = Message::create([
-                'user_id' => Auth::id(),
-                'content' => $validated['content'],
-                'time' => now()
+                'sender_id' => Auth::id(),
+                'recipient_id' => $request->recipient_id,
+                'message' => $request->content,
+                'created_at' => now()
             ]);
 
-            // Broadcast le message à tous les utilisateurs connectés sauf l'émetteur
+            // Diffuser l'événement MessageSent
             broadcast(new MessageSent($message))->toOthers();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Message envoyé avec succès',
-                'data' => $message->load('user')
+                'data' => $message->load('sender', 'recipient')
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -45,10 +51,18 @@ class MessageController extends Controller
         }
     }
 
-    public function index()
+    public function index($userId)
     {
         try {
-            $messages = Message::with('user')->latest()->get();
+            $messages = Message::where(function ($query) use ($userId) {
+                $query->where('sender_id', Auth::id())
+                      ->where('recipient_id', $userId);
+            })->orWhere(function ($query) use ($userId) {
+                $query->where('sender_id', $userId)
+                      ->where('recipient_id', Auth::id());
+            })->with(['sender', 'recipient'])
+               ->orderBy('created_at', 'desc')
+               ->get();
 
             return response()->json([
                 'success' => true,
@@ -61,5 +75,39 @@ class MessageController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function users()
+    {
+        try {
+            $users = User::where('id', '!=', Auth::id())
+                         ->get();
+
+            // Broadcast la liste mise à jour
+            broadcast(new UsersUpdated(Auth::user(), $users))->toOthers();
+
+            return response()->json([
+                'success' => true,
+                'users' => $users
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateStatus()
+    {
+        $this->userStatusService->updateStatus(Auth::id(), true);
+        return response()->json(['status' => 'updated']);
+    }
+
+    public function disconnect()
+    {
+        $this->userStatusService->updateStatus(Auth::id(), false);
+        return response()->json(['status' => 'updated']);
     }
 }

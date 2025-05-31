@@ -2,28 +2,25 @@
   <div class="profile-container">
     <div class="profile-header">
       <div class="profile-avatar">
-        <img
-          :src="user.avatar || 'https://via.placeholder.com/150'"
-          alt="Avatar"
-        />
+        <img :src="profileForm.avatar" alt="Avatar" />
         <button class="avatar-upload-btn" @click="showUploadModal = true">
           <i class="bi bi-camera"></i>
         </button>
       </div>
       <div class="profile-info">
-        <h1>{{ user.name }}</h1>
-        <p class="email">{{ user.email }}</p>
+        <h1>{{ profileForm.name }}</h1>
+        <p class="email">{{ profileForm.email }}</p>
         <div class="stats">
           <div class="stat-item">
-            <span class="number">{{ ordersCount }}</span>
-            <span class="label">Commandes</span>
-          </div>
-          <div class="stat-item">
             <span class="number">{{ productsCount }}</span>
-            <span class="label">Produits</span>
+            <span class="label">Produits disponibles dans la boutique</span>
           </div>
         </div>
       </div>
+      <button class="btn-danger" @click="confirmDelete">
+        <i class="bi bi-trash"></i>
+        Supprimer le compte
+      </button>
     </div>
 
     <div class="profile-tabs">
@@ -40,13 +37,6 @@
       >
         <i class="bi bi-shield-lock"></i>
         Sécurité
-      </button>
-      <button
-        :class="['tab-btn', { active: activeTab === 'orders' }]"
-        @click="activeTab = 'orders'"
-      >
-        <i class="bi bi-cart-check"></i>
-        Commandes
       </button>
     </div>
 
@@ -95,33 +85,27 @@
               <span v-if="loading" class="spinner"></span>
               <span v-else>Changer le mot de passe</span>
             </button>
+            <button class="btn btn-danger" @click="confirmLogout">
+              <i class="bi bi-box-arrow-right"></i>
+              Déconnexion
+            </button>
           </div>
         </form>
-        <div class="danger-zone">
-          <button class="btn-danger" @click="confirmLogout">
-            <i class="bi bi-box-arrow-right"></i>
-            Déconnexion
-          </button>
-          <button class="btn-danger" @click="confirmDelete">
-            <i class="bi bi-trash"></i>
-            Supprimer le compte
-          </button>
-        </div>
       </div>
 
       <div v-if="activeTab === 'orders'" class="profile-section">
         <h2>Mes commandes</h2>
         <div class="orders-list">
           <div v-if="orders.length > 0">
-              <div v-for="order in orders" :key="order.id" class="order-card">
-                <div class="order-info">
-                  <span class="order-number">Commande #{{ order.id }}</span>
-                  <span class="order-date">{{ formatDate(order.date) }}</span>
-                </div>
-                <div class="order-status" :class="order.status">
-                  {{ order.status }}
-                </div>
+            <div v-for="order in orders" :key="order.id" class="order-card">
+              <div class="order-info">
+                <span class="order-number">Commande #{{ order.id }}</span>
+                <span class="order-date">{{ formatDate(order.date) }}</span>
               </div>
+              <div class="order-status" :class="order.status">
+                {{ order.status }}
+              </div>
+            </div>
           </div>
           <div v-else>
             <p>Vous n'avez pas de commandes</p>
@@ -159,14 +143,11 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { useRouter } from 'vue-router';
+import { useRouter } from "vue-router";
 
 const router = useRouter();
 
 const user = ref({
-  name: "John Doe",
-  email: "john@example.com",
-  avatar: "",
 });
 
 const orders = ref([]);
@@ -202,29 +183,10 @@ const handleFileChange = (event) => {
   }
 };
 
-    // Commandes
-const getOrders = async () => {
-    try {
-    axios.get('/api/getOrders', {
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Accept': 'application/json'
-        }
-    }).then(response => {        
-        orders.value = response.data;
-        ordersCount.value = orders.value.length;
-    }).catch(error => {
-        console.error('Erreur lors de la récupération des commandes:', error);
-        showErrorMessage('Erreur lors de la récupération des commandes')
-    })
-    } catch (error) {
-        console.error('Erreur lors de la récupération des commandes:', error);
-        showErrorMessage('Erreur lors de la récupération des commandes')
-    }
-}
 
 const uploadAvatar = async () => {
   // Logique pour l'upload de l'avatar
+  
   try {
     await axios.post(
       "/api/uploadAvatar",
@@ -436,16 +398,27 @@ const confirmDelete = () => {
   });
 };
 
+const getProductsCount = async () => {
+  try {
+    const { data } = await axios.get("/api/products");
+    productsCount.value = data.products.length;
+  } catch (error) {
+    console.error("Erreur lors de la récupération du nombre de produits :", error);
+  }
+};
+
 onMounted(() => {
   // Charger les données utilisateur
   const userData = JSON.parse(localStorage.getItem("user"));
   if (userData) {
     user.value = userData;
     profileForm.value = { ...userData };
-  }
+  };
 
-  getOrders();
+  getProductsCount();
 });
+
+
 </script>
 
 <style scoped>
@@ -647,7 +620,7 @@ onMounted(() => {
 .btn-danger {
   background: #ef4444;
   color: white;
-  padding: 0.75rem 1.5rem;
+  padding: 5px;
   border: none;
   border-radius: 8px;
   font-weight: 500;

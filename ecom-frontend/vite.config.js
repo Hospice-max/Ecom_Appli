@@ -10,16 +10,16 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/csrf-token': {
-          target: 'http://localhost:8000',
+          target: 'http://localhost:8101',
           changeOrigin: true
         },
         '/api': {
-          target: 'http://localhost:8000',
+          target: 'http://localhost:8101',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, '')
         },
         '/broadcasting': {
-          target: 'http://localhost:8000',
+          target: 'http://localhost:8101',
           changeOrigin: true
         }
       }

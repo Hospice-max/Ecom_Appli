@@ -56,7 +56,7 @@ Pour exécuter ce projet localement, vous devez avoir :
    ```
 
 6. Lancez les serveurs :
-   - Backend : `php artisan serve` (par défaut sur http://localhost:8000)
+   - Backend : `php artisan serve` (par défaut sur http://localhost:8101)
    - Frontend : `npm run dev` (par défaut sur http://localhost:5173)
 
 ## 📦 Structure du Projet

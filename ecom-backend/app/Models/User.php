@@ -15,7 +15,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'avatar'
+        'avatar',
+        'online'
     ];
 
     protected $hidden = [
@@ -25,6 +26,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'online' => 'boolean'
     ];
 
     public function orders()
@@ -35,5 +37,26 @@ class User extends Authenticatable
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+
+    // Messages where user is the sender
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    // Messages where user is the recipient
+    public function receivedMessages()
+    {
+        return $this->hasMany(Message::class, 'recipient_id');
+    }
+
+    // All messages related to the user
+    public function messages()
+    {
+        return Message::where(function($query) {
+            $query->where('sender_id', $this->id)
+                  ->orWhere('recipient_id', $this->id);
+        });
     }
 }

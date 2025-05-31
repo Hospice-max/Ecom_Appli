@@ -16,20 +16,33 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
-Route::post('/postMessages', [MessageController::class, 'store'])->middleware('auth:sanctum');
-Route::get('/getMessages', [MessageController::class, 'index'])->middleware('auth:sanctum');
+// Routes des messages
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/postMessages', [MessageController::class, 'store']);
+    Route::get('/getMessages', [MessageController::class, 'index']);
+    Route::post('/messages', [MessageController::class, 'store']);
+    Route::get('/messages/{userId}', [MessageController::class, 'index']);
+    Route::get('/users', [MessageController::class, 'users']);
+});
 
-Route::get('/products', [ProductController::class, 'index'])->middleware('auth:sanctum');
-Route::post('/products/cart', [ProductController::class,'store'])->middleware('auth:sanctum');
-Route::get('/products/{id}', [ProductController::class, 'show'])->middleware('auth:sanctum');
-Route::post('/updateProduct/{product}', [ProductController::class,'update'])->middleware('auth:sanctum');
-Route::post('/deleteProduct/{id}', [ProductController::class,'destroy'])->middleware('auth:sanctum');
+// Routes des produits
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/products', [ProductController::class, 'index']);
+    Route::post('/products/cart', [ProductController::class,'store']);
+    Route::get('/products/{id}', [ProductController::class, 'show']);
+    Route::post('/updateProduct/{product}', [ProductController::class,'update']);
+    Route::post('/deleteProduct/{id}', [ProductController::class,'destroy']);
+});
 
-Route::post('/orders', [OrderController::class,'store'])->middleware('auth:sanctum');
-Route::get('/getOrders', [OrderController::class,'index'])->middleware('auth:sanctum');
-Broadcast::routes();
+// Routes des commandes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/orders', [OrderController::class,'store']);
+    Route::get('/getOrders', [OrderController::class,'index']);
+});
+
 // Routes de broadcast
 Broadcast::routes(['middleware' => ['auth:sanctum']]);
+
 Route::get('/csrf-token', function () {
     return response()->json([
         'csrf_token' => csrf_token()
