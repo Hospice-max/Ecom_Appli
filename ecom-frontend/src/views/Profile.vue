@@ -4,8 +4,8 @@
       <div class="profile-avatar">
         <div class="profile-avatar">
           <img
-            v-if="avatar"
-            :src="avatar"
+            v-if="user.avatar"
+            :src="user.avatar"
             alt="Avatar"
             class="rounded-circle w-100 h-100"
           />
@@ -52,7 +52,10 @@
           >
             <img id="previewImage" style="max-width: 90%; max-height: 90%" />
           </div>
-          <button @click="confirmImage()" class="ConfirmBtn">Confirm</button>
+          <div class="btnDiv">
+            <button @click="confirmImage()" class="ConfirmBtn">Confirm</button>
+            <button @click="cancelImage()" class="CancelBtn">Cancel</button>
+          </div>
         </div>
       </div>
       <div class="profile-info">
@@ -124,16 +127,17 @@
         <form @submit.prevent="updateProfile" class="profile-form">
           <div class="form-group">
             <label>Nom complet</label>
-            <input v-model="profileForm.name" type="text" required />
+            <input class="inputText" v-model="user.name" type="text" required />
           </div>
           <div class="form-group">
             <label>Email</label>
-            <input v-model="profileForm.email" type="email" required />
+            <input class="inputText" v-model="user.email" type="email" required />
           </div>
           <div class="form-group">
             <label>Adresse</label>
             <input
-              v-model="profileForm.address"
+              class="inputText"
+              v-model="user.address"
               placeholder="inscrivez votre adresse"
               type="text"
             />
@@ -141,7 +145,8 @@
           <div class="form-group">
             <label>Téléphone</label>
             <input
-              v-model="profileForm.phone"
+              class="inputText"
+              v-model="user.phone"
               placeholder="inscrivez votre numero"
               type="tel"
             />
@@ -296,22 +301,55 @@ import axios from "axios";
 import store from "../store";
 
 const router = useRouter();
-const user = JSON.parse(localStorage.getItem("user"));
+const user = ref([]);
+const localStorageUser = JSON.parse(localStorage.getItem("user"));
+const userId = localStorageUser.id;
 const activeTab = ref("profile");
 
-// Formulaires
-const profileForm = {
-  name: user.name || "",
-  email: user.email || "",
-  address: user.address || "",
-  phone: user.phone || "",
-};
 
-const passwordForm = {
+onMounted(() => {
+  // Récupérer l'utilisateur depuis le store Vuex
+  const currentUser = localStorageUser;
+  if (currentUser && currentUser.id) {
+    // Utiliser l'ID de l'utilisateur connecté pour récupérer ses données
+    axios
+      .get(`/api/users/${currentUser.id}`)
+      .then((response) => {
+        user.value = response.data.user;
+        avatar.value = user.value.avatar;
+      })
+      .catch((error) => {
+        console.error(
+          "Erreur lors de la récupération des données utilisateur:",
+          error
+        );
+        Swal.fire({
+          icon: "error",
+          title: "Erreur",
+          text: "Impossible de récupérer les données utilisateur",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      });
+  } else {
+    console.error("Aucun utilisateur connecté trouvé dans le store");
+    router.push("/login");
+  }
+});
+
+// Formulaires
+const profileForm = ref({
+  name: user.value.name || "",
+  email: user.value.email || "",
+  address: user.value.address || "",
+  phone: user.value.phone || "",  
+});
+
+const passwordForm = ref({
   current: "",
   new: "",
   confirm: "",
-};
+});
 
 const loading = ref(false);
 
@@ -353,7 +391,7 @@ function confirmImage() {
     formData.append("avatar", selectedImageDataUrl);
 
     axios
-      .post(`/api/update-avatar/${user.id}`, formData, {
+      .post(`/api/update-avatar/${userId}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -386,6 +424,10 @@ function confirmImage() {
         closePreview();
       });
   }
+}
+
+function cancelImage() {
+  closePreview();
 }
 
 // Données simulées
@@ -423,18 +465,37 @@ function formatDate(date) {
   return new Date(date).toLocaleDateString();
 }
 
-// TODO: Mettre à jour le profil
+// Mettre à jour le profil
 function updateProfile() {
   loading.value = true;
-  // Logique de mise à jour du profil
-  Swal.fire({
-    icon: "success",
-    title: "Succès",
-    text: "Profil mis à jour avec succès !",
-    timer: 2000,
-    showConfirmButton: false,
-  });
-  loading.value = false;
+  axios
+    .post(`/api/update-profile/${user.id}`, profileForm)
+    .then((response) => {
+      if (response.data.success === true) {
+        user.value = response.data.user;
+        localStorage.setItem("user", JSON.stringify(user.value));
+        Swal.fire({
+          icon: "success",
+          title: "Succès",
+          text: response.data.message,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+      Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text: error.response?.data?.message || "Une erreur est survenue",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    })
+    .finally(() => {
+      loading.value = false;
+    });
 }
 
 // TODO: Changer le mot de passe
@@ -545,35 +606,6 @@ const logout = async () => {
   }
 };
 
-onMounted(() => {
-  // Récupérer l'utilisateur depuis le store Vuex
-  const currentUser = user;
-  if (currentUser && currentUser.id) {
-    // Utiliser l'ID de l'utilisateur connecté pour récupérer ses données
-    axios
-      .get(`/api/users/${currentUser.id}`)
-      .then((response) => {
-        user.value = response.data;
-        avatar.value = user.value.avatar;
-      })
-      .catch((error) => {
-        console.error(
-          "Erreur lors de la récupération des données utilisateur:",
-          error
-        );
-        Swal.fire({
-          icon: "error",
-          title: "Erreur",
-          text: "Impossible de récupérer les données utilisateur",
-          timer: 3000,
-          showConfirmButton: false,
-        });
-      });
-  } else {
-    console.error("Aucun utilisateur connecté trouvé dans le store");
-    router.push("/login");
-  }
-});
 </script>
 
 <style scoped>
@@ -665,6 +697,11 @@ onMounted(() => {
   padding: 2rem;
   border-radius: 0.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.inputText {
+  color: #b1d1e4;
+  font-style: italic;
 }
 
 .profile-form {
@@ -868,13 +905,26 @@ onMounted(() => {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.7);
 }
-.ConfirmBtn {
+.btnDiv {
+  display: flex;
+  justify-content: center;
   position: absolute;
-  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
+  gap: 2rem;
+  bottom: 20px;
+}
+.ConfirmBtn {
   padding: 10px 20px;
   background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.CancelBtn {
+  padding: 10px 20px;
+  background-color: #f44336;
   color: white;
   border: none;
   border-radius: 5px;

@@ -4,7 +4,7 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Broadcast;
 
 Route::get('/', function () {
@@ -25,10 +25,11 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Routes des utilisateurs
-Route::get('/users', [MessageController::class, 'users']);
-Route::get('/users/{id}', [AuthController::class, 'show']);
-Route::delete('/delete-account/{id}', action: [MessageController::class,'destroy']);
-Route::post('/update-avatar/{id}', action: [AuthController::class,'updateAvatar']);
+Route::get('/users', [ProfileController::class, 'users']);
+Route::get('/users/{id}', [ProfileController::class, 'user']);
+Route::delete('/delete-account/{id}', action: [ProfileController::class,'destroy']);
+Route::post('/update-avatar/{id}', action: [ProfileController::class,'updateAvatar']);
+Route::post('/update-profile/{id}', action: [ProfileController::class,'updateProfile']);
 
 // Routes des produits
 Route::middleware('auth:sanctum')->group(function () {
@@ -44,12 +45,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/cart', [ProductController::class,'cart']);
     Route::post('/addToCart/{product}', [ProductController::class,'store']);
     Route::delete('/removeFromCart/{product}', [ProductController::class,'destroy']);
-});
-
-// Routes des commandes
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/orders', [OrderController::class,'store']);
-    Route::get('/getOrders', [OrderController::class,'index']);
 });
 
 // Routes de broadcast

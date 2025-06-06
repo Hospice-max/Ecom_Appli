@@ -81,35 +81,4 @@ class AuthController extends Controller
             'message' => 'Déconnexion réussie'
         ]);
     }
-
-    public function user(Request $request)
-    {
-        return response()->json([
-            'success' => true,
-            'user' => [
-                'id' => $request->user()->id,
-                'name' => $request->user()->name,
-                'email' => $request->user()->email
-            ]
-        ]);
-    }
-
-    public function updateAvatar($id, Request $request) {
-       try {
-        $user = User::find($id);
-        $user->avatar = $request->avatar;
-        $user->save();
-        return response()->json([
-            'success' => true,
-            'message' => 'Photo de profil mise à jour avec succès',
-            'avatar' => $user->avatar
-        ]);
-       } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Une erreur est survenue',
-            'error' => $e->getMessage()
-        ], 500);
-       }
-    }
 }
